@@ -1,3 +1,7 @@
+## MacOS scpecific
+*.DS_Store
+[Tt]humbs.db
+
 # Logs
 logs
 *.log
