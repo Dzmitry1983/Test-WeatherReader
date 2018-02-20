@@ -1,47 +1,149 @@
+//node.js modules 
 const http = require('http');
 const fs = require('fs');
-var url = require('url');
+let url = require('url');
 
-const html_index_path = './resources/html/index.html';
-const html_404_path = './resources/html/404.html';
-const home_page = '/index.html';
-const ajax_update = '/ajax';
+//my modules
+const user = require('./models/user_info.js');
 
+//server constants
 const hostname = '127.0.0.1';
 const port = 8080;
-var number = 1;
+
+//html pages paths
+const html_index_path = './resources/html/index.html';
+const html_404_path = './resources/html/404.html';
+
+//constants for commands
+const pathname_home_page = '/index.html';
+const pathname_ajax_update = '/ajax';
+const ajax_remove_user = 'ajax_remove_user';
+const ajax_get_user_info = 'ajax_get_user_info';
+//const ajax_get_cities_for_city_name = 'ajax_get_cities_for_city_name';
+const ajax_add_city = 'ajax_add_city';
+
+//cookie names constants
+const cookie_name = 'session_user_id';
 
 
-var server = http.createServer((req, res) => {
-	var q = url.parse(req.url, true);
-	console.log(q.pathname);
+/*
+ * request <http.IncomingMessage>
+ * response <http.ServerResponse>
+ */
+const server = http.createServer((request, response) => {
 	
-	switch (q.pathname) {
-		case home_page:
-			fs.readFile(html_index_path, function(err, data) {
-		    	res.writeHead(200, {'Content-Type': 'text/html'});
-		    	res.write(data);
-		    	res.end();
- 			});
-		break;
-		case ajax_update:
-			res.write('la-la-la' + number);
-    		res.end();
-		break;
-		default:
-			fs.readFile(html_404_path, function(err, data) {
-		    	res.writeHead(200, {'Content-Type': 'text/html'});
-		    	res.write(data);
-		    	res.end();
- 			});
-		break;
+//	const { headers, method, url } = request;
+//	console.log(headers);
+//	console.log(method);
+//	console.log(url);
+	
+	if (request.method == "POST") {
+		processingPostData(request, response);
 	}
-
-	
-	number++;
- 	console.log(`Server createServer  - (${req.url}) \n`);
+	else {
+		reloadPage(request, response);
+	}
 });
 
 server.listen(port, hostname, () => {
  	console.log(`Server running at http://${hostname}:${port}/\n`);
 });
+
+
+//This function sends html static pages to client
+function reloadPage(request, response) {
+	const pathname = url.parse(request.url, true).pathname;
+	let filepath = "";
+	switch (pathname) {
+		case pathname_home_page:
+			updateSessionUser(request, response);
+			filepath = html_index_path;
+		break;
+		default:
+			filepath = html_404_path;
+		break;
+	}
+	fs.readFile(filepath, function(err, data) {
+		response.writeHead(200, {'Content-Type': 'text/html'});
+		response.write(data);
+		response.end();
+		});
+}
+
+//work with POST requests
+function processingPostData(request, response) {
+	let body = [];
+	//http.IncommingMessage implements the Readable Stream
+	request.on('error', (err) => {
+			console.error(err);
+		}).on('data', (chunk) => {
+			body.push(chunk);
+		}).on('end', () => {
+			body = Buffer.concat(body).toString();
+			if (body.length > 0) {
+				let obj = JSON.parse(body);
+				sendAjaxData(request, response, obj);
+			}
+	  });
+}
+
+function sendAjaxData(request, response, json_object) {
+	let return_data = '';
+	let user_info;
+	switch (json_object.action) {
+		case ajax_remove_user:
+			user_info = clearSessionUser(response);
+			return_data = user_info.jsonString();
+			break;
+		case ajax_get_user_info:
+			user_info = updateSessionUser(request, response);
+			return_data = user_info.jsonString();
+			break;
+		case ajax_add_city:
+			
+			user_info = updateSessionUser(request, response);
+			user_info.addCity(json_object.city_name);
+			return_data = user_info.jsonString();
+			break;
+		default:
+			break;
+	}
+	response.write(return_data);
+	response.end();
+	console.log(return_data);
+}
+
+//work with cookies
+function parseCookies (request) {
+    let list = {};
+    const rc = request.headers.cookie;
+    rc && rc.split(';').forEach(function( cookie ) {
+        let parts = cookie.split('=');
+        list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
+
+    return list;
+}
+
+function loadUserIdFromCookies(request) {
+	const cookies = parseCookies(request);
+	const session_user_id = cookies[cookie_name];
+	return session_user_id;
+}
+
+function saveUserIdToCookies(response, user_id) {
+	response.setHeader('Set-Cookie', [cookie_name + "=" + user_id]);
+}
+
+function updateSessionUser(request, response) {
+	const session_user_id = loadUserIdFromCookies(request);
+	const user_info = user.loadUserByUserId(session_user_id);
+	saveUserIdToCookies(response, user_info.id);
+	return user_info;
+}
+
+function clearSessionUser(response) {
+	const user_info = user.loadUserByUserId(0);
+	saveUserIdToCookies(response, user_info.id);
+	return user_info;
+}

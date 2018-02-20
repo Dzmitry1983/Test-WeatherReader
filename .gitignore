@@ -2,6 +2,10 @@
 *.DS_Store
 [Tt]humbs.db
 
+##eclipse
+.project
+.settings
+
 # Logs
 logs
 *.log

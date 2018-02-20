@@ -3,23 +3,116 @@
 	<head>
 		<title>Weather reader</title>
 		<script>
-			function loadDoc() {
-				  var xhttp = new XMLHttpRequest();
-				  xhttp.onreadystatechange = function() {
-				    if (this.readyState == 4 && this.status == 200) {
-				     document.getElementById("demo").innerHTML = this.responseText;
-				    }
-				  };
-				  xhttp.open("POST", "ajax", true);
-				  xhttp.send();
-				}
+			function onLoad() {
+				formListener();
+				updatePage();
+				document.getElementById("main_info_block").innerHTML = '';
+			}
+			
+			function loadData(value) {
+			  let xhttp = new XMLHttpRequest();
+			  xhttp.onreadystatechange = function() {
+			    if (this.readyState == 4 && this.status == 200) {
+			    		const json = this.responseText;
+			    		let obj = JSON.parse(json);
+			     	document.getElementById("user_id").innerHTML = obj.user.id;
+			     	const cities_element = document.getElementById("cities");
+			     	cities_element.innerHTML = '';
+			     	obj.user.cities.forEach(function(element) {
+			     		let div = document.createElement("DIV");
+			     		div.style = "border: thick solid blue";
+			     		let name_element = makeElmentForNameAndText("City", element.name);
+			     		let t_min_element = makeElmentForNameAndText("tMin", element.temperature_min);
+			     		let t_max_element = makeElmentForNameAndText("tMax", element.temperature_max);
+			     		let p_min_element = makeElmentForNameAndText("precipitationMin", element.precipitation_min);
+			     		let p_max_element = makeElmentForNameAndText("precipitationMax", element.precipitation_max);
+			     		let p_type_element = makeElmentForNameAndText("precipitation", element.precipitation_type);
+			     		let text_space = document.createTextNode(" ");
+			     		div.appendChild(name_element);
+			     		div.appendChild(t_min_element);
+			     		div.appendChild(t_max_element);
+			     		div.appendChild(p_min_element);
+			     		div.appendChild(p_max_element);
+			     		div.appendChild(p_type_element);
+			     		
+			     		cities_element.appendChild(div);
+			     		cities_element.appendChild(text_space);
+			     	});
+			    }
+			  };
+			  xhttp.open("POST", "ajax", true);
+			  xhttp.send(value);
+			}
+			
+			function makeElmentForNameAndText(name, text) {
+				let div = document.createElement("DIV");
+				let text_name = document.createTextNode(name);
+				let text_space = document.createTextNode(":");
+				let text_text = document.createTextNode(text);
+				div.appendChild(text_name);
+				div.appendChild(text_space);
+				div.appendChild(text_text);
+				return div;
+			}
+
+			function sendClearUserId() {
+				const value = {action:'ajax_remove_user'};
+				const json = JSON.stringify(value);
+				loadData(json);
+			}
+			
+			function updatePage() {
+				const value = {action:'ajax_get_user_info'};
+				const json = JSON.stringify(value);
+				loadData(json);
+			}
+			
+			function addCity() {
+				const value = {action:'ajax_remove_user'};
+				const json = JSON.stringify(value);
+				loadData(json);
+			}
+			
+			function formListener() {
+				let form = document.forms.namedItem("city_info_form");
+				form.addEventListener('submit', function(ev) {
+					const text = form.elements.namedItem("city_name").value;
+					const value = {action:'ajax_add_city', city_name:text};
+					const json = JSON.stringify(value);
+					loadData(json);
+					ev.preventDefault();
+					form.elements.namedItem("city_name").value = "";
+				}, false);
+			}
+			
+			
+			
 		</script>
 	</head>
-	<body>
-		
-		<div id="demo">
-  			<h2>Changeble text</h2>
+	<body onload="onLoad();">
+		<div id="main_info_block"  style="text-align: center">
+  			Messages...
 		</div>
-		<button type="button" onclick="loadDoc()">Change Content</button>
+		<div id="user_block" style="display: inline">
+			Current user number:
+			<div id="user_id" style="display: inline">userId</div>
+			<button type="button" onclick="sendClearUserId()">Reset user</button>
+			
+		</div>
+		
+		<div id="cities_block" style="display: inline; float:right">
+			Cities Info
+			<div id="cities">City</div>
+		
+		</div>
+		
+		<div>
+			<form method="post" name="city_info_form">
+  				City name:<br>
+  				<input type="text" name="city_name"><br>
+  				<input type="submit" value="Add city" >
+  			</form>
+		</div>
+		
 	</body>
 </html>
