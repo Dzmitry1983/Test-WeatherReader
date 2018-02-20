@@ -9,5 +9,4 @@ function city_info () {
 	this.precipitation_min = 0;
 	this.precipitation_max = 0;
 	this.precipitation_type = "";
-	
 }

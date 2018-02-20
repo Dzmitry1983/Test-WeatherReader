@@ -5,6 +5,7 @@
 ##eclipse
 .project
 .settings
+package-lock.json
 
 # Logs
 logs
