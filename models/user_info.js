@@ -3,7 +3,6 @@ const city_info = require('./city_info.js');
 
 //exports
 module.exports = user;
-module.exports.loadUserByUserId = loadUserByUserId;
 
 //user_info model
 function user() {
@@ -24,7 +23,7 @@ function user() {
 				const city = new city_info();
 				city.name = city_name;
 				this.cities.push(city);
-				database.saveCitiesForUserId(this.id, this.cities);
+//				await database.saveCitiesForUserId(this.id, this.cities);
 			}
 		}
 	}
@@ -37,21 +36,23 @@ function user() {
 			
 			if (index >= 0) {
 				this.cities.splice(index, 1);
-				database.saveCitiesForUserId(this.id, this.cities);
+//				await database.saveCitiesForUserId(this.id, this.cities);
 			}
 		}
 	}
 }
 
 //support functions
-function loadUserByUserId(user_id) {
-	let new_user_id = user_id;
-	if (!database.isUserIdExist(user_id)) {
-		new_user_id = database.getNewUserId();
-	}
-	let cities = database.getCitiesForUserId(user_id);
-	const user_info = new user();
-	user_info.id = new_user_id;
-	user_info.cities = cities;
-	return user_info;
-}
+//async function loadUserByUserId(user_id) {
+//	let new_user_id = user_id;
+//	const user_id_exist = await database.isUserIdExist(user_id);
+//	console.log("loadUserByUserId" + user_id_exist);
+////	if (!user_id_exist) {
+////		new_user_id = await database.getNewUserId();
+////	}
+////	let cities = await database.getCitiesForUserId(user_id);
+//	const user_info = new user();
+//	user_info.id = new_user_id;
+////	user_info.cities = cities;
+//	return user_info;
+//}

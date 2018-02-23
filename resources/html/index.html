@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Weather reader</title>
-		<script>
+<head>
+<title>Weather reader</title>
+<script>
 			function onLoad() {
 				formListener();
 				updatePage();
@@ -88,31 +88,29 @@
 			
 			
 		</script>
-	</head>
-	<body onload="onLoad();">
-		<div id="main_info_block"  style="text-align: center">
-  			Messages...
-		</div>
-		<div id="user_block" style="display: inline">
-			Current user number:
-			<div id="user_id" style="display: inline">userId</div>
-			<button type="button" onclick="sendClearUserId()">Reset user</button>
-			
-		</div>
-		
-		<div id="cities_block" style="display: inline; float:right">
-			Cities Info
-			<div id="cities">City</div>
-		
-		</div>
-		
-		<div>
-			<form method="post" name="city_info_form">
-  				City name:<br>
-  				<input type="text" name="city_name"><br>
-  				<input type="submit" value="Add city" >
-  			</form>
-		</div>
-		
-	</body>
+</head>
+<body onload="onLoad();">
+	<div id="main_info_block" style="text-align: center">Messages...
+	</div>
+	<div id="user_block" style="display: inline">
+		Current user number:
+		<div id="user_id" style="display: inline">userId</div>
+		<button type="button" onclick="sendClearUserId()">Reset user</button>
+
+	</div>
+
+	<div id="cities_block" style="display: inline; float: right">
+		Cities Info
+		<div id="cities">City</div>
+
+	</div>
+
+	<div>
+		<form method="post" name="city_info_form">
+			City name:<br> <input type="text" name="city_name"><br>
+			<input type="submit" value="Add city">
+		</form>
+	</div>
+
+</body>
 </html>

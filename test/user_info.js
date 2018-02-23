@@ -2,6 +2,7 @@ var assert = require('assert');
 const model_for_check = require('../models/user_info.js');
 
 describe('user_info', function() {
+	
   describe('#check properties exist', function() {
 	const properties_names = [
 		'id', 
@@ -24,23 +25,15 @@ describe('user_info', function() {
   });
   
   describe('#check functions', function() {
-	  describe('#module functions', function() {
-		  it(`loadUserByUserId`, function(){
-			  assert.equal("function", typeof model_for_check.loadUserByUserId);
-			  let id = 0;
-			  let model = model_for_check.loadUserByUserId(id);
-		      assert.notEqual(id, model.id);
-		      id = model.id;
-		      model = model_for_check.loadUserByUserId(id);
-		      assert.equal(id, model.id);
-		    });
-	  });
-
 	  describe('#object functions', function() {
 		  let model = new model_for_check();
 		  const cityName1 = 'Minsk';
 		  const cityName2 = 'Moscow';
 		  const cityName3 = 'MinskMoscow';
+		  
+		  before(function () {
+			  this.skip();
+			});
 		  
 		  it(`addCityByName`, function() {
 			  assert.equal("function", typeof model.addCityByName);

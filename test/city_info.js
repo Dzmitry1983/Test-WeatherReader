@@ -2,10 +2,10 @@ var assert = require('assert');
 const model_for_check = require('../models/city_info.js');
 
 describe('city_info', function() {
+	
   describe('#check properties exist', function() {
 	const properties_names = [
 		'name', 
-		'id', 
 		'status',
 		'date_last_update', 
 		'temperature_min',

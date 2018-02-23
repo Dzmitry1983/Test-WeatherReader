@@ -2,7 +2,7 @@
 const http = require('http');
 const fs = require('fs');
 let url = require('url');
-
+const database = require('./modules/db_connector.js');
 //my modules
 const user = require('./models/user_info.js');
 
@@ -25,6 +25,14 @@ const ajax_add_city = 'ajax_add_city';
 //cookie names constants
 const cookie_name = 'session_user_id';
 
+async function databasePrepare() {
+	await database.deleteDatabase();
+	await database.initialize();
+}
+
+databasePrepare();
+
+//
 
 /*
  * request <http.IncomingMessage>
@@ -87,7 +95,7 @@ function processingPostData(request, response) {
 	  });
 }
 
-function sendAjaxData(request, response, json_object) {
+async function sendAjaxData(request, response, json_object) {
 	let return_data = '';
 	let user_info;
 	switch (json_object.action) {
@@ -96,12 +104,12 @@ function sendAjaxData(request, response, json_object) {
 			return_data = user_info.jsonString();
 			break;
 		case ajax_get_user_info:
-			user_info = updateSessionUser(request, response);
+			user_info = await updateSessionUser(request, response);
+			console.log(user_info);
 			return_data = user_info.jsonString();
 			break;
 		case ajax_add_city:
-			
-			user_info = updateSessionUser(request, response);
+			user_info = await updateSessionUser(request, response);
 			user_info.addCity(json_object.city_name);
 			return_data = user_info.jsonString();
 			break;
@@ -135,9 +143,9 @@ function saveUserIdToCookies(response, user_id) {
 	response.setHeader('Set-Cookie', [cookie_name + "=" + user_id]);
 }
 
-function updateSessionUser(request, response) {
+async function updateSessionUser(request, response) {
 	const session_user_id = loadUserIdFromCookies(request);
-	const user_info = user.loadUserByUserId(session_user_id);
+	const user_info = await database.loadUserByUserId(session_user_id);
 	saveUserIdToCookies(response, user_info.id);
 	return user_info;
 }

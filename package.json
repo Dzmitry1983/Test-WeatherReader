@@ -1,16 +1,17 @@
 {
-  "name": "WeatherReader",
-  "version": "1.0.0",
-  "description": "Simple server without additional modules, except test modules",
-  "main": "server.js",
-  "author": "Dzmitry Kudrashou",
-  "license": "MIT",
-  "devDependencies": {
-    "mocha": "^5.0.1",
-    "chai": "^3.5.0",
-    "chai-http": "^2.0.1"
-  },
-  "scripts": {
-    "test": "mocha --timeout 10000"
-  }
+	"name": "WeatherReader",
+	"version": "1.0.0",
+	"description": "Simple server without additional modules, except test modules",
+	"main": "server.js",
+	"author": "Dzmitry Kudrashou",
+	"license": "MIT",
+	"devDependencies": {
+		"mysql": "",
+		"mocha": "^5.0.1",
+		"chai": "^3.5.0",
+		"chai-http": "^2.0.1"
+	},
+	"scripts": {
+		"test": "mocha"
+	}
 }
