@@ -3,6 +3,8 @@ const domain = require('domain');
 const model_for_check = require('../modules/db_connector.js');
 const city_info = require('../models/city_info.js');
 
+const city_name_1 = 'Minsk';
+const city_name_2 = 'Moscow';
 
 //exports.initialize = initialize;
 describe('db_connector', function() {
@@ -101,9 +103,6 @@ describe('db_connector', function() {
 					let is_table_users_exist = false;
 					let is_table_cities_exist = false;
 					let is_table_users_cities_exist = false;
-					
-					const city_name_1 = 'Minsk';
-					const city_name_2 = 'Moscow';
 					
 					before(function () {
 						if (!is_database_exist) this.skip();

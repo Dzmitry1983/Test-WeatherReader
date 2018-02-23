@@ -31,9 +31,6 @@ describe('user_info', function() {
 		  const cityName2 = 'Moscow';
 		  const cityName3 = 'MinskMoscow';
 		  
-		  before(function () {
-			  this.skip();
-			});
 		  
 		  it(`addCityByName`, function() {
 			  assert.equal("function", typeof model.addCityByName);
