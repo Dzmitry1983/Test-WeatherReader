@@ -12,14 +12,18 @@ describe('city_info', function() {
 		'temperature_max',
 		'precipitation_min',
 		'precipitation_max',
-		'precipitation_type'];
+		'precipitation_type',
+		
+		'latitude',
+		'longitude',
+		'country',
+		'province',
+		];
 	const model = new model_for_check();
 	
 	it(`should return true when the properties count (${properties_names.length}) is same with checking array (${Object.keys(model).length})`, function(){
 	      assert.equal(properties_names.length, Object.keys(model).length);
 	    });
-	
-	
 	
 	properties_names.forEach(function(property_name) {
 		it(`should return true when the ${property_name} exists`, function(){

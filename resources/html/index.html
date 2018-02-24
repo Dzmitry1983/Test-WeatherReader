@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+	
 <head>
 <title>Weather reader</title>
 <script>
@@ -7,6 +8,7 @@
 				formListener();
 				updatePage();
 				document.getElementById("main_info_block").innerHTML = '';
+				setTimeout(updatePage, 2000);
 			}
 			
 			function loadData(value) {
@@ -21,20 +23,26 @@
 			     	obj.user.cities.forEach(function(element) {
 			     		let div = document.createElement("DIV");
 			     		div.style = "border: thick solid blue";
-			     		let name_element = makeElmentForNameAndText("City", element.name);
-			     		let t_min_element = makeElmentForNameAndText("tMin", element.temperature_min);
-			     		let t_max_element = makeElmentForNameAndText("tMax", element.temperature_max);
-			     		let p_min_element = makeElmentForNameAndText("precipitationMin", element.precipitation_min);
-			     		let p_max_element = makeElmentForNameAndText("precipitationMax", element.precipitation_max);
-			     		let p_type_element = makeElmentForNameAndText("precipitation", element.precipitation_type);
-			     		let text_space = document.createTextNode(" ");
-			     		div.appendChild(name_element);
-			     		div.appendChild(t_min_element);
-			     		div.appendChild(t_max_element);
-			     		div.appendChild(p_min_element);
-			     		div.appendChild(p_max_element);
-			     		div.appendChild(p_type_element);
 			     		
+			     		Object.keys(element).forEach(function(key) {
+			     			if (key != "date_last_update") {
+			     				if (element[key] != null && element[key] != 0) {
+			     					let text = element[key];
+			     					if (key == "status" && text == "unknown") {
+			     						text = "Unknown City"
+			     					}
+			     					let name_element = makeElmentForNameAndText(key, text);
+					     			div.appendChild(name_element);
+			     				}
+			     				
+			     			} 
+			     			/* let name_element = makeElmentForNameAndText(key, element[key]);
+			     			 div.appendChild(name_element);*/
+			     			
+			    			}); 
+			    			/* let name_element = makeElmentForNameAndText(key, element[key]);
+			     		div.appendChild(name_element); */
+			     		let text_space = document.createTextNode(" ");
 			     		cities_element.appendChild(div);
 			     		cities_element.appendChild(text_space);
 			     	});

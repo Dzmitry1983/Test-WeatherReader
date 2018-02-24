@@ -1,7 +1,6 @@
 const assert = require('assert');
-const domain = require('domain');
 const model_for_check = require('../modules/db_connector.js');
-const city_info = require('../models/city_info.js');
+const cities_informer = require('../modules/cities_informer.js');
 
 const city_name_1 = 'Minsk';
 const city_name_2 = 'Moscow';
@@ -270,12 +269,16 @@ describe('db_connector', function() {
 							await model_for_check.addCityByName(city_name_1);
 							let city = await model_for_check.getCityByName(city_name_1);
 							assert.equal(city_name_1, city.name);
+							assert.notEqual('unknown', city.status, "city status don't need to be unknown");
+							assert.notEqual(null , city.status, "city status don't need to be null");
 							let random = Math.floor((Math.random() * 100) + 1);
 							city.temperature_min = random;
 							await model_for_check.updateCity(city);
 							await model_for_check.addCityByName(city_name_1);
 							city = await model_for_check.getCityByName(city_name_1);
 							assert.equal(random, city.temperature_min);
+							assert.notEqual('unknown', city.status, "city status don't need to be unknown after saving");
+							assert.notEqual(null , city.status, "city status don't need to be null after saving");
 						});
 						
 					});
@@ -297,8 +300,7 @@ describe('db_connector', function() {
 						
 						it(`saveCitiesForUserId/getCitiesForUserId`, async function () {
 							let cities = [];
-							const city = new city_info();
-							city.name = city_name_3;
+							const city = cities_informer.getCityInfoByName(city_name_3);
 							cities.push(city);
 							await model_for_check.removeAllCities();
 							assert.equal(0, await model_for_check.getCountCities(), 'Cities count must be 0');
@@ -321,8 +323,7 @@ describe('db_connector', function() {
 							await model_for_check.addCityByName(city_name_2);
 							cities.push(await model_for_check.getCityByName(city_name_1));
 							cities.push(await model_for_check.getCityByName(city_name_2));
-							const city = new city_info();
-							city.name = city_name_3;
+							const city = cities_informer.getCityInfoByName(city_name_3);
 							cities.push(city);
 							assert.equal(3, cities.length, "cities count must be 3");
 							await model_for_check.saveCitiesForUserId(user_id, cities);

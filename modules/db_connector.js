@@ -1,6 +1,6 @@
 var mysql = require('mysql');
-const city_info = require('../models/city_info.js');
 const user_info = require('../models/user_info.js');
+const cities_informer = require('../modules/cities_informer.js');
 
 exports.initialize = initialize;
 
@@ -426,10 +426,12 @@ function getCityByName(city_name) {
 		    }
 		    else {
 		    		const city_db = rows[0];
-		    		const city = new city_info();
-		    		
+		    		const city = cities_informer.getCityInfoByName(city_name);
 		    		Object.keys(city_db).forEach(function(key) {
-		    			city[key] = city_db[key];
+		    			if (key != "status" || city_db[key] != null) {
+	    					city[key] = city_db[key];
+	    				}
+//		    			city[key] = city_db[key];
 		    		});
 
 		    		resolve(city);
@@ -516,9 +518,12 @@ function getCitiesForUserId(user_id) {
 		    else {
 		    		let cities = [];
 		    		rows.forEach((city_db) => {
-		    			const city = new city_info();
+		    			const city = cities_informer.getCityInfoByName(city_db.name);
 		    			Object.keys(city_db).forEach(function(key) {
-			    			city[key] = city_db[key];
+			    			if (key != "status" || city_db[key] != null) {
+		    					city[key] = city_db[key];
+		    				}
+//		    				city[key] = city_db[key];
 			    		});
 		    			cities.push(city);
 		    		});

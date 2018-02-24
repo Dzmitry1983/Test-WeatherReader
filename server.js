@@ -19,7 +19,6 @@ const pathname_home_page = '/index.html';
 const pathname_ajax_update = '/ajax';
 const ajax_remove_user = 'ajax_remove_user';
 const ajax_get_user_info = 'ajax_get_user_info';
-//const ajax_get_cities_for_city_name = 'ajax_get_cities_for_city_name';
 const ajax_add_city = 'ajax_add_city';
 
 const status_code_error = 404;
@@ -95,7 +94,7 @@ const server = http.createServer((request, response) => {
 					});
 					break;
 				case ajax_add_city:
-					console.log(json_object);
+//					console.log(json_object);
 					database.loadUserByUserId(user_id).then(function(user_info) {
 						user_info.addCityByName(json_object.city_name);
 						database.saveCitiesForUserId(user_info.id, user_info.cities).then(function () {

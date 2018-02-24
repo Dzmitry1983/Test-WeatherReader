@@ -26,13 +26,16 @@ describe('cities_informer', function() {
 		
 		describe('#cities_informer works', () => {
 			before(function () {
-				this.skip();
+//				this.skip();
 			});
 			
 			it(`getCityInfoByName`, function () {
-				assert.ok(model_for_check.getCityInfoByName(city_name_1), "city doesn't exist");
-				assert.ok(model_for_check.getCityInfoByName(city_name_2), "city doesn't exist");
-				assert.ok(!model_for_check.getCityInfoByName(city_name_3), "city exist, but it's not real city");
+				const city1 = model_for_check.getCityInfoByName(city_name_1);
+				const city2 = model_for_check.getCityInfoByName(city_name_2);
+				const city3 = model_for_check.getCityInfoByName(city_name_3);
+				assert.notEqual("unknown", city1.status, "city doesn't exist");
+				assert.notEqual("unknown", city2.status, "city doesn't exist");
+				assert.equal("unknown", city3.status, "city exist, but it's not real city");
 				
 			});
 		});
