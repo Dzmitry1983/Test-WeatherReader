@@ -15,7 +15,7 @@ function user() {
 	}
 	
 	this.addCityByName = function (city_name) {
-		if (city_name.length > 0) {
+		if (city_name != null && city_name.length > 0) {
 			const index = this.cities.findIndex(function (city) {
 				return city.name === city_name;
 			});

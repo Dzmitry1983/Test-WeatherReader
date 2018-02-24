@@ -22,14 +22,18 @@ const ajax_get_user_info = 'ajax_get_user_info';
 //const ajax_get_cities_for_city_name = 'ajax_get_cities_for_city_name';
 const ajax_add_city = 'ajax_add_city';
 
+const status_code_error = 404;
+const status_code_ok = 200;
+
 //cookie names constants
 const cookie_name = 'session_user_id';
 
-async function databasePrepare() {
-	await database.deleteDatabase();
-	await database.initialize();
-}
 
+exports.close = function() {
+	server.close();
+};
+
+//initialize databases
 databasePrepare();
 
 //
@@ -39,87 +43,148 @@ databasePrepare();
  * response <http.ServerResponse>
  */
 const server = http.createServer((request, response) => {
+	let headers = {'Content-Type': 'text/html'};
 	
-//	const { headers, method, url } = request;
-//	console.log(headers);
-//	console.log(method);
-//	console.log(url);
+	function finishResponse(send_value) {
+		if (send_value.error) {
+			console.error(send_value.error);
+		}
+		if (send_value.headers) {
+			headers = Object.assign({}, headers, send_value.headers);
+//			console.log(headers);
+		}
+		
+		response.writeHead(send_value.status_code, headers);
+		if (send_value.data) {
+//			console.log("send:");
+//			console.log(send_value.data);
+			response.write(send_value.data);
+		}
+		response.end();
+	}
+	
 	
 	if (request.method == "POST") {
-		processingPostData(request, response);
+		dynamicAjaxData(request, (send_value) => {
+			
+			let return_data = '';
+			let user_id = loadUserIdFromCookies(request);
+			let json_object = send_value.json_object;
+			
+			
+			
+			
+			
+//			console.log("loadUserIdFromCookies(request)");
+//			console.log(loadUserIdFromCookies(request));
+//			console.log("loadUserIdFromCookies(request) end");
+			
+			switch (json_object.action) {
+				case ajax_remove_user:
+					database.loadUserByUserId(0).then(function(user_info) {
+						send_value.data = user_info.jsonString();
+						saveUserIdToCookies(response, user_info.id);
+						finishResponse(send_value);
+					});
+					break;
+				case ajax_get_user_info:
+					database.loadUserByUserId(user_id).then(function(user_info) {
+						send_value.data = user_info.jsonString();
+						saveUserIdToCookies(response, user_info.id);
+						finishResponse(send_value);
+					});
+					break;
+				case ajax_add_city:
+					console.log(json_object);
+					database.loadUserByUserId(user_id).then(function(user_info) {
+						user_info.addCityByName(json_object.city_name);
+						database.saveCitiesForUserId(user_info.id, user_info.cities).then(function () {
+							database.loadUserByUserId(user_info.id).then(function(new_user) {
+								send_value.data = new_user.jsonString();
+								saveUserIdToCookies(response, new_user.id);
+								finishResponse(send_value);
+							});
+						});
+					});
+					break;
+				default:
+					send_value.status_code = status_code_error;
+					finishResponse(send_value);
+					break;
+			}
+			
+//			finishResponse(send_value);
+		});
 	}
 	else {
-		reloadPage(request, response);
+		staticHtml(request, finishResponse);
 	}
+	
 });
 
+//start server listener
 server.listen(port, hostname, () => {
  	console.log(`Server running at http://${hostname}:${port}/\n`);
 });
 
-
-//This function sends html static pages to client
-function reloadPage(request, response) {
+//This function sends html pages to client
+function staticHtml(request, callback) {
 	const pathname = url.parse(request.url, true).pathname;
 	let filepath = "";
+	let status_code = status_code_ok;
 	switch (pathname) {
 		case pathname_home_page:
-			updateSessionUser(request, response);
 			filepath = html_index_path;
 		break;
 		default:
 			filepath = html_404_path;
+			status_code = status_code_error;
 		break;
 	}
 	fs.readFile(filepath, function(err, data) {
-		response.writeHead(200, {'Content-Type': 'text/html'});
-		response.write(data);
-		response.end();
-		});
+		if (err) {
+			status_code = status_code_error;
+		}
+		let send_data = new Object();
+		send_data.status_code = status_code;
+		send_data.data = data;
+		send_data.error = err;
+		callback(send_data);
+	});
 }
 
 //work with POST requests
-function processingPostData(request, response) {
+function dynamicAjaxData(request, callback) {
 	let body = [];
 	//http.IncommingMessage implements the Readable Stream
 	request.on('error', (err) => {
-			console.error(err);
-		}).on('data', (chunk) => {
+		let send_data = new Object();
+		send_data.error = err;
+		send_data.status_code = status_code_error;
+		callback(send_data);
+	}).on('data', (chunk) => {
 			body.push(chunk);
 		}).on('end', () => {
-			body = Buffer.concat(body).toString();
-			if (body.length > 0) {
-				let obj = JSON.parse(body);
-				sendAjaxData(request, response, obj);
-			}
-	  });
+			let text = Buffer.concat(body).toString();
+			let send_data = new Object();
+			send_data.status_code = status_code_ok;
+			try {
+				send_data.json_object = JSON.parse(text);
+		    } 
+			catch (err) {
+		    		send_data.error = err;
+		    }
+			callback(send_data);
+		});
 }
 
-async function sendAjaxData(request, response, json_object) {
-	let return_data = '';
-	let user_info;
-	switch (json_object.action) {
-		case ajax_remove_user:
-			user_info = clearSessionUser(response);
-			return_data = user_info.jsonString();
-			break;
-		case ajax_get_user_info:
-			user_info = await updateSessionUser(request, response);
-			console.log(user_info);
-			return_data = user_info.jsonString();
-			break;
-		case ajax_add_city:
-			user_info = await updateSessionUser(request, response);
-			user_info.addCity(json_object.city_name);
-			return_data = user_info.jsonString();
-			break;
-		default:
-			break;
-	}
-	response.write(return_data);
-	response.end();
-	console.log(return_data);
-}
+//function clearSessionUser(response) {
+//	let user_info = await database.loadUserByUserId(id);
+//	const user_info = user.loadUserByUserId(0);
+//	saveUserIdToCookies(response, user_info.id);
+//	return user_info;
+//}
+
 
 //work with cookies
 function parseCookies (request) {
@@ -133,9 +198,13 @@ function parseCookies (request) {
     return list;
 }
 
+//load user_id
 function loadUserIdFromCookies(request) {
 	const cookies = parseCookies(request);
-	const session_user_id = cookies[cookie_name];
+	let session_user_id = cookies[cookie_name];
+	if (session_user_id == null) {
+		session_user_id = 0;
+	}
 	return session_user_id;
 }
 
@@ -143,15 +212,16 @@ function saveUserIdToCookies(response, user_id) {
 	response.setHeader('Set-Cookie', [cookie_name + "=" + user_id]);
 }
 
+
+//async
+
+async function databasePrepare() {
+	await database.initialize();
+}
+
 async function updateSessionUser(request, response) {
 	const session_user_id = loadUserIdFromCookies(request);
 	const user_info = await database.loadUserByUserId(session_user_id);
-	saveUserIdToCookies(response, user_info.id);
-	return user_info;
-}
-
-function clearSessionUser(response) {
-	const user_info = user.loadUserByUserId(0);
 	saveUserIdToCookies(response, user_info.id);
 	return user_info;
 }

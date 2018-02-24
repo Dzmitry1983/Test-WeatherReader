@@ -5,6 +5,7 @@ const city_info = require('../models/city_info.js');
 
 const city_name_1 = 'Minsk';
 const city_name_2 = 'Moscow';
+const city_name_3 = 'New York';
 
 //exports.initialize = initialize;
 describe('db_connector', function() {
@@ -272,6 +273,7 @@ describe('db_connector', function() {
 							let random = Math.floor((Math.random() * 100) + 1);
 							city.temperature_min = random;
 							await model_for_check.updateCity(city);
+							await model_for_check.addCityByName(city_name_1);
 							city = await model_for_check.getCityByName(city_name_1);
 							assert.equal(random, city.temperature_min);
 						});
@@ -291,6 +293,42 @@ describe('db_connector', function() {
 							assert.notEqual(0, user_id, "user id can't be 0");
 							cities = await model_for_check.getCitiesForUserId(user_id);
 							assert.ok(cities, "cities didn't find");
+						}); 
+						
+						it(`saveCitiesForUserId/getCitiesForUserId`, async function () {
+							let cities = [];
+							const city = new city_info();
+							city.name = city_name_3;
+							cities.push(city);
+							await model_for_check.removeAllCities();
+							assert.equal(0, await model_for_check.getCountCities(), 'Cities count must be 0');
+							let user_id = await model_for_check.getNewUserId();
+							assert.notEqual(0, user_id, "user id must be 0");
+							await model_for_check.saveCitiesForUserId(user_id, cities);
+							assert.equal(1, await model_for_check.getCountCities(), 'Cities count must be 1');
+							const user_cities = await model_for_check.getCitiesForUserId(user_id); 
+							assert.equal(cities.length, user_cities.length, `different count cities (${cities.length}, ${user_cities.length}) for user ${user_id}`);
+						}); 
+						
+						it(`saveCitiesForUserId/getCitiesForUserId`, async function () {
+							let cities = [];
+							let user_id = await model_for_check.getNewUserId();
+							assert.notEqual(0, user_id, "user id can't be 0");
+							await model_for_check.saveCitiesForUserId(user_id, cities);
+							cities = await model_for_check.getCitiesForUserId(user_id);
+							assert.ok(cities, "cities didn't find");
+							await model_for_check.addCityByName(city_name_1);
+							await model_for_check.addCityByName(city_name_2);
+							cities.push(await model_for_check.getCityByName(city_name_1));
+							cities.push(await model_for_check.getCityByName(city_name_2));
+							const city = new city_info();
+							city.name = city_name_3;
+							cities.push(city);
+							assert.equal(3, cities.length, "cities count must be 3");
+							await model_for_check.saveCitiesForUserId(user_id, cities);
+							await model_for_check.saveCitiesForUserId(user_id, cities);
+							const user_cities = await model_for_check.getCitiesForUserId(user_id); 
+							assert.equal(cities.length, user_cities.length, `different count cities (${cities.length}, ${user_cities.length}) for user ${user_id}`);
 						}); 
 						
 						it(`saveCitiesForUserId/getCitiesForUserId`, async function () {

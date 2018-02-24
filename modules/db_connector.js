@@ -60,7 +60,7 @@ function databaseConnector () {
 			host: db_host,
 			user: db_user,
 			password: db_password,
-//			multipleStatements: true,
+			multipleStatements: true,
 			database: database_name
 	}
 	
@@ -83,7 +83,25 @@ function databaseConnector () {
 	//callback is waiting for (error, rows, fields)
 	this.executeRequestForPreferences = function(preferences, sql_request, callback) {
 		const isError = function (error) {
-			console.log(error);
+//			console.log(sql_request);
+			const keys_to_show = [
+				'code', 
+				'errno', 
+				'sqlMessage',
+				'sqlState',
+				'index', 
+				'sql'
+				];
+//			console.log(Object.keys(error));
+			keys_to_show.forEach((key) => {
+				console.log(key + ":" + error[key]);
+			});
+//			
+//			console.log(error.sqlMessage);
+//			console.log(error.sql);
+			
+			
+			
 			callback(error);
 		}
 		const connection = mysql.createConnection(preferences);
@@ -163,29 +181,18 @@ const database_connector = new databaseConnector();
  * create database WeatherReader;
  * use WeatherReader;
  * CREATE TABLE users (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT);
- * CREATE TABLE cities (name VARCHAR(100) UNIQUE, status VARCHAR(20), date_last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, temperature_min INT DEFAULT 0, temperature_max INT DEFAULT 0, precipitation_min INT DEFAULT 0, precipitation_max INT DEFAULT 0, precipitation_type VARCHAR(100));
- * CREATE TABLE users_cities (user_id INT not null, name VARCHAR(100)) PRIMARY KEY (user_id, name);
+ * CREATE TABLE cities (name VARCHAR(100) PRIMARY KEY, status VARCHAR(20), date_last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, temperature_min INT DEFAULT 0, temperature_max INT DEFAULT 0, precipitation_min INT DEFAULT 0, precipitation_max INT DEFAULT 0, precipitation_type VARCHAR(100));
+ * CREATE TABLE users_cities (user_id INT, name VARCHAR(100), PRIMARY KEY(user_id, name), FOREIGN KEY(user_id) REFERENCES users(id) on delete cascade, FOREIGN KEY (name) REFERENCES cities(name) on delete cascade); 
  * 
  * describe users;
  * describe cities;
  * describe users_cities;
  *  
  *  insert into users values(default); select LAST_INSERT_ID();
+ *  delete from users where id=1;
+ *  
  *  //select LAST_INSERT_ID();
  */
-
-async function initialize() {
-	if (await isMysqlConnected()) {
-		if (await isDatabaseExist() === false) {
-			await createDatabase();
-		}
-		if (await isDatabaseExist()) {
-			await createTableUsers();
-			await createTableCities();
-			await createTableUsersCities();
-		}
-	}
-}
 
 
 //check database
@@ -226,14 +233,15 @@ function createTableUsers() {
 	const sql_request = `CREATE TABLE ${table_name_users} (id INT NOT NULL PRIMARY KEY AUTO_INCREMENT);`;
 	return new Promise(resolve => {
 		database_connector.executeRequest(sql_request, (error, rows, fields) => {
+//			console.log("asdfsadfasfkdaslfjlsdajflasdjflkjsdfkl;jsal;dkf");
 			resolve();
 		});
 	});
 }
 
 function createTableCities() {
-	//CREATE TABLE cities (name VARCHAR(100) UNIQUE, status VARCHAR(20), date_last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, temperature_min INT DEFAULT 0, temperature_max INT DEFAULT 0, precipitation_min INT DEFAULT 0, precipitation_max INT DEFAULT 0, precipitation_type VARCHAR(100));
-	const sql_request = `CREATE TABLE ${table_name_cities} (name VARCHAR(100) UNIQUE, status VARCHAR(20), date_last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, temperature_min INT DEFAULT 0, temperature_max INT DEFAULT 0, precipitation_min INT DEFAULT 0, precipitation_max INT DEFAULT 0, precipitation_type VARCHAR(100));`;
+	//CREATE TABLE cities (name VARCHAR(100) PRIMARY KEY, status VARCHAR(20), date_last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, temperature_min INT DEFAULT 0, temperature_max INT DEFAULT 0, precipitation_min INT DEFAULT 0, precipitation_max INT DEFAULT 0, precipitation_type VARCHAR(100));
+	const sql_request = `CREATE TABLE ${table_name_cities} (name VARCHAR(100) PRIMARY KEY, status VARCHAR(20), date_last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, temperature_min INT DEFAULT 0, temperature_max INT DEFAULT 0, precipitation_min INT DEFAULT 0, precipitation_max INT DEFAULT 0, precipitation_type VARCHAR(100));`;
 	return new Promise(resolve => {
 		database_connector.executeRequest(sql_request, (error, rows, fields) => {
 			resolve();
@@ -243,7 +251,7 @@ function createTableCities() {
 
 function createTableUsersCities() {
 	//CREATE TABLE users_cities (user_id INT not null, name VARCHAR(100) not null);
-	const sql_request = `CREATE TABLE ${table_name_users_cities} (user_id INT not null, name VARCHAR(100) not null);`;
+	const sql_request = `CREATE TABLE ${table_name_users_cities} (user_id INT, name VARCHAR(100), PRIMARY KEY (user_id, name), FOREIGN KEY (user_id) REFERENCES ${table_name_users} (id) on delete cascade, FOREIGN KEY (name) REFERENCES ${table_name_cities} (name) ON DELETE CASCADE ON UPDATE CASCADE);`;
 	return new Promise(resolve => {
 		database_connector.executeRequest(sql_request, (error, rows, fields) => {
 			resolve();
@@ -322,9 +330,9 @@ function isUserIdExist(user_id) {
 
 //callback (error, new user id)
 function getNewUserId() {
+	
 	const sql_request = `insert into ${table_name_users} values(default);`;
 	return new Promise(resolve => {
-		
 		database_connector.executeRequest(sql_request, (error, rows, fields) => {
 			if (error) {
 				resolve(0);
@@ -345,21 +353,10 @@ function removeUserById(user_id) {
 	});
 }
 
-async function loadUserByUserId(user_id) {
-	let new_user_id = user_id;
-	const user_id_exist = await isUserIdExist(user_id);
-	if (!user_id_exist) {
-		new_user_id = await getNewUserId();
-	}
-	let cities = await getCitiesForUserId(new_user_id);
-	const user = new user_info();
-	user.id = new_user_id;
-	user.cities = cities;
-	return user;
-}
+
 
 function removeAllUsers() {
-	const sql_request = `TRUNCATE TABLE ${table_name_users};`;
+	const sql_request = `DELETE FROM ${table_name_users};`;
 	return new Promise(resolve => {
 		database_connector.executeRequest(sql_request, (error, rows, fields) => {
 			resolve(0);
@@ -405,20 +402,10 @@ function isCityNameExist(city_name) {
 //}
 
 function addCityByName(city_name) {
-	const promise = isCityNameExist(city_name);
-	return promise.then((is_city_exist) => {
-		if (!is_city_exist) {
-			return insertCityByName(city_name);
-		}
-	});
-	
-}
-
-function insertCityByName(city_name) {
-	const sql_request = `insert into ${table_name_cities} (name) values('${city_name}');`;
+	const sql_request = `insert ignore into ${table_name_cities} (name) values('${city_name}');`;
 	return new Promise(resolve => {
 		database_connector.executeRequest(sql_request, (error, rows, fields) => {
-			resolve(0);
+			resolve();
 //			if (error) {
 //				resolve(0);
 //		    }
@@ -461,7 +448,7 @@ function removeCityByName(city_name) {
 }
 
 function removeAllCities() {
-	const sql_request = `TRUNCATE TABLE ${table_name_cities};`;
+	const sql_request = `DELETE FROM ${table_name_cities};`;
 	return new Promise(resolve => {
 		database_connector.executeRequest(sql_request, (error, rows, fields) => {
 			resolve();
@@ -541,20 +528,17 @@ function getCitiesForUserId(user_id) {
 	});
 }
 
-async function saveCitiesForUserId(user_id, cities) {
-	await removeCitiesForUserId(user_id);
-	let promises = [];
+function saveCitiesForUserId(user_id, cities) {
+	let promises_save = [];
 	cities.forEach(function(city) {
-		promises.push(saveCityForUserId(user_id, city));
+		promises_save.push(saveCityForUserId(user_id, city.name));
 	});
-	return Promise.all(promises);
+	
+	return Promise.all(promises_save);
 }
 
-
-
-
-function saveCityForUserId(user_id, citie) {
-	const sql_request = `REPLACE into ${table_name_users_cities} (user_id, name) values (${user_id}, '${citie.name}');`;
+function saveCityForUserId(user_id, city_name) {
+	const sql_request = `START TRANSACTION; insert ignore into ${table_name_cities} (name) values('${city_name}'); REPLACE into ${table_name_users_cities} (user_id, name) values (${user_id}, '${city_name}'); COMMIT;`;
 	return new Promise(function (resolve) {
 		database_connector.executeRequest(sql_request, (error, rows, fields) => {
 			resolve();
@@ -562,11 +546,65 @@ function saveCityForUserId(user_id, citie) {
 	});
 }
 
-function removeCitiesForUserId(user_id) {
-	const sql_request = `delete from ${table_name_users_cities} where user_id=${user_id};`;
-	return new Promise(function (resolve) {
-		database_connector.executeRequest(sql_request, (error, rows, fields) => {
-			resolve();
-		});
-	});
+//async functions
+async function loadUserByUserId(user_id) {
+	const user = new user_info();
+	user.id = user_id;
+	const user_id_exist = await isUserIdExist(user_id);
+	if (!user_id_exist) {
+		user.id = await getNewUserId();
+	}
+	user.cities = await getCitiesForUserId(user.id);
+	return user;
+}
+
+//function loadUserByUserId(user_id) {
+//	const user = new user_info();
+//	const sql_request = `insert ignore into ${table_name_users} values(user_id);`;
+//	return new Promise(resolve => {
+//		database_connector.executeRequest(sql_request, (error, rows, fields) => {
+//			if (error) {
+//				user.id = 0;
+//				resolve(user);
+//		    }
+//		    else {
+//		    		user.id = rows.insertId;
+//		    		const sql_request_cities = `SELECT ${table_name_cities}.* FROM ${table_name_users_cities} INNER JOIN ${table_name_cities} on ${table_name_cities}.name = ${table_name_users_cities}.name LEFT JOIN ${table_name_users} on ${table_name_users_cities}.user_id = ${table_name_users}.id WHERE ${table_name_users}.id = ${user.id};`;
+//		    		database_connector.executeRequest(sql_request_cities, (error, rows, fields) => {
+//	    				if (!error) {
+//	    			    		let cities = [];
+//	    			    		rows.forEach((city_db) => {
+//	    			    			const city = new city_info();
+//	    			    			Object.keys(city_db).forEach(function(key) {
+//	    				    			city[key] = city_db[key];
+//	    				    		});
+//	    			    			cities.push(city);
+//	    			    		});
+//	    			    		user.cities = cities;
+//	    			    }
+//	    				resolve(user);
+//	    			});
+//		    }
+//		});
+//	});
+//}
+
+
+async function initialize() {
+	if (await isMysqlConnected()) {
+		if (await isDatabaseExist() === false) {
+			await createDatabase();
+		}
+		if (await isDatabaseExist()) {
+			if (await isTableUsersExist() === false) {
+				await createTableUsers();
+			}
+			if (await isTableCitiesExist() === false) {
+				await createTableCities();
+			}
+			if (await isTableUsersCitiesExist() === false) {
+				await createTableUsersCities();
+			}
+		}
+	}
 }

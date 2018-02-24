@@ -2,6 +2,10 @@ var assert = require('assert');
 const model_for_check = require('../modules/weather_city_connector.js');
 //const city_info = require('../models/city_info.js');
 
+
+
+
+
 describe('weather_city_connector', function() {
   describe('#check functions', function() {
 	  describe('#module functions exist', function() {
@@ -18,7 +22,7 @@ describe('weather_city_connector', function() {
 			});
 	  });
 	  describe('#module functions work', function() {
-		
+
 	  });
   });
 });
