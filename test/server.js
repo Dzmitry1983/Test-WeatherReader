@@ -23,7 +23,7 @@ describe('server', function() {
 			const functions_names = [
 				'close',
 				];
-			
+
 			functions_names.forEach(function(function_name) {
 				it(`${function_name}`, function() {
 					let is_function = model_for_check.hasOwnProperty(function_name);
@@ -33,12 +33,12 @@ describe('server', function() {
 				});
 			});
 		});
-		
+
 		describe('#server works', () => {
 			before(function () {
 				if (!all_functions_exist) this.skip();
 			});
-			
+
 			after(function () {
 				model_for_check.close();
 			});
@@ -49,7 +49,7 @@ describe('server', function() {
 						done();
 					});
 				});
-				
+
 				it('check connection, should return 200', function (done) {
 					http.get(`http://${hostname}:${port}${pathname_home_page}`, function (res) {
 						assert.equal(200, res.statusCode);
@@ -57,29 +57,29 @@ describe('server', function() {
 					});
 				});
 			});
-			
+
 			describe('check ajax', () => {
 				let cookies = null;
 				let functions_to_skip = {
 						ajax_remove_user:true,
 						ajax_get_user_info:true,
 						ajax_add_city:true,
-						};
-				
+				};
+
 				function sendAjaxData(json_dictionary, callback) {
 					let callback_value = new Object();
 					const post_data = JSON.stringify(json_dictionary);
 					const options = {
-						  hostname:hostname,
-						  port: port,
-						  path: pathname_ajax_update,
-						  method: 'POST',
-						  timeout:1000,
-						  headers: {
-							    'Content-Type': 'text/html',
-							    'Content-Length': Buffer.byteLength(post_data),
-							  }
-						};
+							hostname:hostname,
+							port: port,
+							path: pathname_ajax_update,
+							method: 'POST',
+							timeout:1000,
+							headers: {
+								'Content-Type': 'text/html',
+								'Content-Length': Buffer.byteLength(post_data),
+							}
+					};
 					if (cookies != null) {
 						options.headers['cookie'] = cookies;
 					}
@@ -87,47 +87,41 @@ describe('server', function() {
 						let body = [];
 						callback_value.status_code = res.statusCode; 
 						cookies = res.headers['set-cookie'];
-						
-//						console.log(`status: ${res.statusCode}`);
-//					  	console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
 
 						res.on('data', (chunk) => {
 							body.push(chunk);
 						});
 						res.on('end', () => {
 							callback_value.data = Buffer.concat(body).toString();
-//							console.log(callback_value.data);
 							callback(callback_value);
-							
-					  });
+
+						});
 					});
-					
-					
+
+
 					req.on('error', (err) => {
-					  console.error(`problem with request: ${err.message}`);
-					  callback_value.error = err;
-					  callback(callback_value);
-					  
+						console.error(`problem with request: ${err.message}`);
+						callback_value.error = err;
+						callback(callback_value);
+
 					});
 					req.write(post_data);
 					req.end();
 				}
-					
-				
-				
+
 				//callback is waiting for ({data:text, error:error, status_code:status})
 				function checkAjaxConnection(action, callback) {
 					sendAjaxData({action:action}, callback);
 				}
-				
-				
+
+
 				it('check connection, should return 404', function (done) {
 					http.get(`http://${hostname}:${port}${pathname_ajax_update}`, function (res) {
 						assert.equal(404, res.statusCode);
 						done();
 					});
 				});
-				
+
 				it(`check action (${ajax_remove_user}), should return 200`, function (done) {
 					checkAjaxConnection(ajax_remove_user, (callback_value) => {
 						assert.equal(200, callback_value.status_code,`status code is ${callback_value.status_code}`);
@@ -135,7 +129,7 @@ describe('server', function() {
 						done();
 					});
 				});
-				
+
 				it(`check action (${ajax_get_user_info}), should return 200`, function (done) {
 					checkAjaxConnection(ajax_get_user_info, (callback_value) => {
 						assert.equal(200, callback_value.status_code,`status code is ${callback_value.status_code}`);
@@ -143,7 +137,7 @@ describe('server', function() {
 						done();
 					});
 				});
-				
+
 				it(`check action (${ajax_add_city}), should return 200`, function (done) {
 					checkAjaxConnection(ajax_add_city, (callback_value) => {
 						assert.equal(200, callback_value.status_code,`status code is ${callback_value.status_code}`);
@@ -151,17 +145,17 @@ describe('server', function() {
 						done();
 					});
 				});
-				
+
 				it('check action (xxxxxxxx), should return 404', function (done) {
 					checkAjaxConnection('xxxxxxxx', (callback_value) => {
 						assert.equal(404, callback_value.status_code,`status code is ${callback_value.status_code}`);
 						done();
 					});
 				});
-				
+
 				describe('verification ajax data', () => {
 					let last_user = 0;
-					
+
 					it(`check action (${ajax_remove_user}), check to keys exist`, function (done) {
 						if (functions_to_skip[ajax_remove_user]) this.skip();
 						checkAjaxConnection(ajax_remove_user, (callback_value) => {
@@ -174,7 +168,7 @@ describe('server', function() {
 							done();
 						});
 					});
-					
+
 					it(`check action (${ajax_remove_user}), check for uniq`, function (done) {
 						if (functions_to_skip[ajax_remove_user]) this.skip();
 						checkAjaxConnection(ajax_remove_user, (callback_value) => {
@@ -186,7 +180,7 @@ describe('server', function() {
 							done();
 						});
 					});
-					
+
 					it(`check action (${ajax_get_user_info}), check to keys exist`, function (done) {
 						if (functions_to_skip[ajax_get_user_info]) this.skip();
 						checkAjaxConnection(ajax_get_user_info, (callback_value) => {
@@ -199,7 +193,7 @@ describe('server', function() {
 							done();
 						});
 					});
-					
+
 					it(`check action (${ajax_get_user_info}), check for equal`, function (done) {
 						if (functions_to_skip[ajax_get_user_info]) this.skip();
 						checkAjaxConnection(ajax_get_user_info, (callback_value) => {
@@ -211,7 +205,7 @@ describe('server', function() {
 							done();
 						});
 					});
-					
+
 					it(`check action (${ajax_add_city}), check to keys exist`, function (done) {
 						if (functions_to_skip[ajax_add_city]) this.skip();
 						checkAjaxConnection(ajax_add_city, (callback_value) => {
@@ -224,7 +218,7 @@ describe('server', function() {
 							done();
 						});
 					});
-					
+
 					it(`check action (${ajax_add_city}), check for different cities count`, function (done) {
 						if (functions_to_skip[ajax_add_city]) this.skip();
 						const data_to_send = {
@@ -241,7 +235,7 @@ describe('server', function() {
 							done();
 						});
 					});
-					
+
 					it(`check action (${ajax_add_city}), check for different cities count`, function (done) {
 						if (functions_to_skip[ajax_add_city]) this.skip();
 						const data_to_send = {
@@ -258,7 +252,7 @@ describe('server', function() {
 							done();
 						});
 					});
-					
+
 					it(`check action (${ajax_add_city}), check for equal if city doesn't exist`, function (done) {
 						if (functions_to_skip[ajax_add_city]) this.skip();
 						const data_to_send = {
@@ -277,24 +271,6 @@ describe('server', function() {
 					});
 				});
 			});
-			
-			
-//			
-//			it('get data!"', function (done) {
-//				http.get(`http://${hostname}:${port}`, function (res) {
-//					var data = '';
-//					res.on('data', function (chunk) {
-//						data += chunk;
-//					});
-//					res.on('end', function () {
-////						assert.equal('Hello, world!\n', data);
-////						console.log(data);
-//				        done();
-//					});
-//			    });
-//			  });
-			
-			
 		});
 	});
 });

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-	
+
 <head>
 <title>Weather reader</title>
 <script>
@@ -47,13 +47,8 @@
 			     				}
 			     				
 			     			} 
-			     			/* let name_element = makeElmentForNameAndText(key, element[key]);
-			     			 div.appendChild(name_element);*/
-			     			
 			    			}); 
 			     		document.getElementById("main_info_block").innerHTML = main_text;
-			    			/* let name_element = makeElmentForNameAndText(key, element[key]);
-			     		div.appendChild(name_element); */
 			     		let text_space = document.createTextNode(" ");
 			     		cities_element.appendChild(div);
 			     		cities_element.appendChild(text_space);
@@ -116,7 +111,6 @@
 		Current user number:
 		<div id="user_id" style="display: inline">userId</div>
 		<button type="button" onclick="sendClearUserId()">Reset user</button>
-
 	</div>
 
 	<div id="cities_block" style="display: inline; float: right">

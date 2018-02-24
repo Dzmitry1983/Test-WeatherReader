@@ -7,14 +7,14 @@ const city_name_2 = 'Moscow';
 const city_name_3 = 'unreal city xxx';
 
 describe('openweathermap_weather_connector', function() {
-	
+
 	describe('#check functions', function() {
 		let all_functions_exist = true;
 		describe('#functions exist', function() {
 			const functions_names = [
 				'getWeatherForCity',
 				];
-			
+
 			functions_names.forEach(function(function_name) {
 				it(`${function_name}`, function() {
 					let is_function = model_for_check.hasOwnProperty(function_name);
@@ -28,15 +28,15 @@ describe('openweathermap_weather_connector', function() {
 			before(function () {
 				if (!all_functions_exist) this.skip();
 			});
-			
-			
+
+
 			it(`getWeatherForCity`, function (done) {
 				const city = cities_informer.getCityInfoByName(city_name_1);
 				model_for_check.getWeatherForCity(city, (data) => {
 					done();
 				});
 			});
-			
+
 		});
-  });
+	});
 });

@@ -1,40 +1,30 @@
 const fs = require('fs');
 const city_info = require('../models/city_info.js');
-//file with information about cities
+
+// path to file with cities information
 const csv_file = './resources/csv/simplemaps-worldcities-basic.csv';
 
+// exports
 exports.getCityInfoByName = getCityInfoByName;
 
 let contents = null;
 let keys = [];
 
-//[ 'city',
-//	  'city_ascii',
-//	  'lat',
-//	  'lng',
-//	  'pop',
-//	  'country',
-//	  'iso2',
-//	  'iso3',
-//	  'province' ]
-
-//simplemaps-worldcities-basic.csv
-/*
- * Get main information about city by city name 
+/**
+ * Get main information about city by city name
  */
 function getCityInfoByName(city_name) {
 	if (contents == null) {
 		contents = {};
 		const text = fs.readFileSync(csv_file, "utf-8");
 		const array = text.split("\r\n");
-		for (let i = 0;  i < array.length; i++) {
+		for (let i = 0; i < array.length; i++) {
 			const line = array[i].split(",");
 			if (i == 0) {
 				keys = line;
-			}
-			else {
+			} else {
 				const object = new Object();
-				for (let j = 0;  j < keys.length; j++) {
+				for (let j = 0; j < keys.length; j++) {
 					object[keys[j]] = line[j];
 				}
 				if (line.length > 0) {

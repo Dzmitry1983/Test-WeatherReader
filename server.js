@@ -2,20 +2,20 @@
 const http = require('http');
 const fs = require('fs');
 let url = require('url');
-//my modules
+// my modules
 const database = require('./modules/db_connector.js');
 const user = require('./models/user_info.js');
 const weather_city_connector = require('./modules/weather_city_connector.js');
 
-//server constants
+// server constants
 const hostname = '127.0.0.1';
 const port = 8080;
 
-//html pages paths
+// html pages paths
 const html_index_path = './resources/html/index.html';
 const html_404_path = './resources/html/404.html';
 
-//constants for commands
+// constants for commands
 const pathname_home_page = '/index.html';
 const pathname_ajax_update = '/ajax';
 const ajax_remove_user = 'ajax_remove_user';
@@ -25,7 +25,7 @@ const ajax_add_city = 'ajax_add_city';
 const status_code_error = 404;
 const status_code_ok = 200;
 
-//cookie names constants
+// cookie names constants
 const cookie_name = 'session_user_id';
 
 
@@ -33,14 +33,13 @@ exports.close = function() {
 	server.close();
 };
 
-//initialize databases
+// initialize databases
 databasePrepare();
 
 //
 
 /*
- * request <http.IncomingMessage>
- * response <http.ServerResponse>
+ * request <http.IncomingMessage> response <http.ServerResponse>
  */
 const server = http.createServer((request, response) => {
 	let headers = {'Content-Type': 'text/html'};
@@ -51,13 +50,10 @@ const server = http.createServer((request, response) => {
 		}
 		if (send_value.headers) {
 			headers = Object.assign({}, headers, send_value.headers);
-//			console.log(headers);
 		}
 		
 		response.writeHead(send_value.status_code, headers);
 		if (send_value.data) {
-//			console.log("send:");
-//			console.log(send_value.data);
 			response.write(send_value.data);
 		}
 		response.end();
@@ -70,14 +66,6 @@ const server = http.createServer((request, response) => {
 			let return_data = '';
 			let user_id = loadUserIdFromCookies(request);
 			let json_object = send_value.json_object;
-			
-			
-			
-			
-			
-//			console.log("loadUserIdFromCookies(request)");
-//			console.log(loadUserIdFromCookies(request));
-//			console.log("loadUserIdFromCookies(request) end");
 			
 			switch (json_object.action) {
 				case ajax_remove_user:
@@ -95,8 +83,6 @@ const server = http.createServer((request, response) => {
 					});
 					break;
 				case ajax_add_city:
-//					console.log(json_object);
-					
 					database.loadUserByUserId(user_id).then(function(user_info) {
 						user_info.addCityByName(json_object.city_name);
 						database.saveCitiesForUserId(user_info.id, user_info.cities).then(function () {
@@ -126,8 +112,6 @@ const server = http.createServer((request, response) => {
 					finishResponse(send_value);
 					break;
 			}
-			
-//			finishResponse(send_value);
 		});
 	}
 	else {
@@ -136,12 +120,12 @@ const server = http.createServer((request, response) => {
 	
 });
 
-//start server listener
+// start server listener
 server.listen(port, hostname, () => {
  	console.log(`Server running at http://${hostname}:${port}/\n`);
 });
 
-//This function sends html pages to client
+// This function sends html pages to client
 function staticHtml(request, callback) {
 	const pathname = url.parse(request.url, true).pathname;
 	let filepath = "";
@@ -167,10 +151,10 @@ function staticHtml(request, callback) {
 	});
 }
 
-//work with POST requests
+// work with POST requests
 function dynamicAjaxData(request, callback) {
 	let body = [];
-	//http.IncommingMessage implements the Readable Stream
+	// http.IncommingMessage implements the Readable Stream
 	request.on('error', (err) => {
 		let send_data = new Object();
 		send_data.error = err;
@@ -192,15 +176,7 @@ function dynamicAjaxData(request, callback) {
 		});
 }
 
-//function clearSessionUser(response) {
-//	let user_info = await database.loadUserByUserId(id);
-//	const user_info = user.loadUserByUserId(0);
-//	saveUserIdToCookies(response, user_info.id);
-//	return user_info;
-//}
-
-
-//work with cookies
+// work with cookies
 function parseCookies (request) {
     let list = {};
     const rc = request.headers.cookie;
@@ -212,7 +188,7 @@ function parseCookies (request) {
     return list;
 }
 
-//load user_id
+// load user_id
 function loadUserIdFromCookies(request) {
 	const cookies = parseCookies(request);
 	let session_user_id = cookies[cookie_name];
@@ -225,9 +201,6 @@ function loadUserIdFromCookies(request) {
 function saveUserIdToCookies(response, user_id) {
 	response.setHeader('Set-Cookie', [cookie_name + "=" + user_id]);
 }
-
-
-//async
 
 async function databasePrepare() {
 	await database.initialize();

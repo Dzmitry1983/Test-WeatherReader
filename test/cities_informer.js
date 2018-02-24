@@ -13,7 +13,7 @@ describe('cities_informer', function() {
 			const functions_names = [
 				'getCityInfoByName',
 				];
-			
+
 			functions_names.forEach(function(function_name) {
 				it(`${function_name}`, function() {
 					let is_function = model_for_check.hasOwnProperty(function_name);
@@ -23,12 +23,12 @@ describe('cities_informer', function() {
 				});
 			});
 		});
-		
+
 		describe('#cities_informer works', () => {
 			before(function () {
-//				this.skip();
+				if (!all_functions_exist) this.skip();
 			});
-			
+
 			it(`getCityInfoByName`, function () {
 				const city1 = model_for_check.getCityInfoByName(city_name_1);
 				const city2 = model_for_check.getCityInfoByName(city_name_2);
@@ -36,7 +36,7 @@ describe('cities_informer', function() {
 				assert.notEqual("unknown", city1.status, "city doesn't exist");
 				assert.notEqual("unknown", city2.status, "city doesn't exist");
 				assert.equal("unknown", city3.status, "city exist, but it's not real city");
-				
+
 			});
 		});
 	});
