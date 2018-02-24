@@ -27,7 +27,6 @@ function getCityInfoByName(city_name) {
 		contents = {};
 		const text = fs.readFileSync(csv_file, "utf-8");
 		const array = text.split("\r\n");
-//		const length = array.length;
 		for (let i = 0;  i < array.length; i++) {
 			const line = array[i].split(",");
 			if (i == 0) {

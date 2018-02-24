@@ -2,9 +2,10 @@
 const http = require('http');
 const fs = require('fs');
 let url = require('url');
-const database = require('./modules/db_connector.js');
 //my modules
+const database = require('./modules/db_connector.js');
 const user = require('./models/user_info.js');
+const weather_city_connector = require('./modules/weather_city_connector.js');
 
 //server constants
 const hostname = '127.0.0.1';
@@ -95,12 +96,26 @@ const server = http.createServer((request, response) => {
 					break;
 				case ajax_add_city:
 //					console.log(json_object);
+					
 					database.loadUserByUserId(user_id).then(function(user_info) {
 						user_info.addCityByName(json_object.city_name);
 						database.saveCitiesForUserId(user_info.id, user_info.cities).then(function () {
 							database.loadUserByUserId(user_info.id).then(function(new_user) {
 								send_value.data = new_user.jsonString();
 								saveUserIdToCookies(response, new_user.id);
+								new_user.cities.forEach((city) => {
+									weather_city_connector.getWeatherForCity(city, (data) => {
+										if (data != null) {
+											city.status = "updated";
+											city.temperature_min = data['temperature_min'];
+											city.temperature_max = data['temperature_max'];
+											city.precipitation_min = data['precipitation'];
+											city.precipitation_max = data['precipitation'];
+											city.precipitation_type = data['precipitation_type'];
+											database.updateCity(city);
+										}
+									});
+								});
 								finishResponse(send_value);
 							});
 						});

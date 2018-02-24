@@ -15,27 +15,6 @@ const city_name_1 = 'Minsk';
 const city_name_2 = 'Moscow';
 const city_name_3 = 'unreal city xxx';
 
-//function parseCookies (request) {
-//    let list = {};
-//    const rc = request.headers.cookie;
-//    rc && rc.split(';').forEach(function( cookie ) {
-//        let parts = cookie.split('=');
-//        list[parts.shift().trim()] = decodeURI(parts.join('='));
-//    });
-//
-//    return list;
-//}
-//
-////load user_id
-//function loadUserIdFromCookies(request) {
-//	const cookies = parseCookies(request);
-//	let session_user_id = cookies[cookie_name];
-//	if (session_user_id == null) {
-//		session_user_id = 0;
-//	}
-//	return session_user_id;
-//}
-
 //exports.initialize = initialize;
 describe('server', function() {
 	describe('#check functions', function() {
@@ -57,7 +36,7 @@ describe('server', function() {
 		
 		describe('#server works', () => {
 			before(function () {
-//				this.skip();
+				if (!all_functions_exist) this.skip();
 			});
 			
 			after(function () {
@@ -111,7 +90,7 @@ describe('server', function() {
 						
 //						console.log(`status: ${res.statusCode}`);
 //					  	console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-//						res.setEncoding('utf8');
+
 						res.on('data', (chunk) => {
 							body.push(chunk);
 						});

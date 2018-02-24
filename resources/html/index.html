@@ -8,7 +8,7 @@
 				formListener();
 				updatePage();
 				document.getElementById("main_info_block").innerHTML = '';
-				setTimeout(updatePage, 2000);
+				setInterval(updatePage, 1000);
 			}
 			
 			function loadData(value) {
@@ -20,6 +20,7 @@
 			     	document.getElementById("user_id").innerHTML = obj.user.id;
 			     	const cities_element = document.getElementById("cities");
 			     	cities_element.innerHTML = '';
+			     	let main_text = "";
 			     	obj.user.cities.forEach(function(element) {
 			     		let div = document.createElement("DIV");
 			     		div.style = "border: thick solid blue";
@@ -28,8 +29,18 @@
 			     			if (key != "date_last_update") {
 			     				if (element[key] != null && element[key] != 0) {
 			     					let text = element[key];
-			     					if (key == "status" && text == "unknown") {
-			     						text = "Unknown City"
+			     					if (key == "status") {
+			     						switch (text) {
+			     							case "unknown":
+			     								text = "Unknown City";
+			     								break;
+			     							case "updating":
+			     								main_text = "Updating..."
+			     								break;
+			     							default:
+			     								break;
+			     						}
+			     						
 			     					}
 			     					let name_element = makeElmentForNameAndText(key, text);
 					     			div.appendChild(name_element);
@@ -40,6 +51,7 @@
 			     			 div.appendChild(name_element);*/
 			     			
 			    			}); 
+			     		document.getElementById("main_info_block").innerHTML = main_text;
 			    			/* let name_element = makeElmentForNameAndText(key, element[key]);
 			     		div.appendChild(name_element); */
 			     		let text_space = document.createTextNode(" ");
