@@ -7,7 +7,7 @@ Also you can find some tests for sync and async node.js parts.
 
 WeatherReader gets information about weather for a city from darksky and openweater and shows it.
 All keys are free and you can use them but if you want to use this project as commercial part, you need to get keys for weather services. You can read all information here:
-https://darksky.net/dev/docs
+https://darksky.net/dev/docs 
 https://openweathermap.org/api
 
 Used standard modules:
@@ -19,8 +19,8 @@ assert
 querystring
 
 Used addition modules:
-mysql
-mocha - for testing
+mysql - for connecting to database.
+mocha - for testing.
 
 To start tests:
 npm test
