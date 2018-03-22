@@ -1,3 +1,8 @@
+/*
+ * Module which provides aggregated information about cities weather
+ */
+
+
 const darksky = require('./darksky_weather_connector.js');
 const openweathermap = require('./openweathermap_weather_connector.js');
 const database = require('./db_connector.js');
