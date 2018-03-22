@@ -1,3 +1,7 @@
+/*
+ * Module works with darksky
+ */
+
 const https = require('https');
 
 const url = "api.darksky.net/forecast";
